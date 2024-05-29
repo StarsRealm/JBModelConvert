@@ -21,7 +21,7 @@ object Convert {
 
         file.listFiles()?.forEach {
             val model = json.decodeFromString<Model>(it.readText())
-            Convert.remapUV(model)
+            remapUV(model)
             it.delete()
             it.createNewFile()
             it.writeText(json.encodeToJsonElement(model).toString())
