@@ -1,6 +1,33 @@
 package com.starsrealm.jbmodelconvert
 
-class Convert {
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
+import java.io.File
+
+object Convert {
+
+    fun process() {
+        val json = Json {
+            encodeDefaults = false // 忽略默认值（包括null值）
+            ignoreUnknownKeys = true // 允许忽略未知的键
+            explicitNulls = false // 忽略null值的字段
+        }
+
+        val file = File("data/model")
+
+        if (!file.exists()) {
+            file.mkdirs()
+        }
+
+        file.listFiles()?.forEach {
+            val model = json.decodeFromString<Model>(it.readText())
+            Convert.remapUV(model)
+            it.delete()
+            it.createNewFile()
+            it.writeText(json.encodeToJsonElement(model).toString())
+        }
+
+    }
 
     fun remapUV(model: Model): Model {
         val texturesAmount = getTexturesAmount(model)
@@ -12,7 +39,7 @@ class Convert {
         return model
     }
 
-    fun processElements(element: Element, map: LinkedHashMap<String, String>, oldSize: Int, newSize: Int) {
+    private fun processElements(element: Element, map: LinkedHashMap<String, String>, oldSize: Int, newSize: Int) {
         element.faces.values.forEach { face ->
             val key = face.texture
             val index = getIndex(key, map)
@@ -21,7 +48,7 @@ class Convert {
         }
     }
 
-    fun getIndex(key: String, map: LinkedHashMap<String, String>) : Int {
+    private fun getIndex(key: String, map: LinkedHashMap<String, String>) : Int {
         var index = 0
         map.forEach { (t, _) ->
             if("#$t".equals(key, ignoreCase = true)) {
@@ -35,7 +62,7 @@ class Convert {
     }
 
 
-    fun getTexturesAmount(model: Model): Int {
+    private fun getTexturesAmount(model: Model): Int {
         var amount = 0
         model.textures.forEach {
             if(it.key != "particle") {

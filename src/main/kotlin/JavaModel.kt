@@ -1,8 +1,6 @@
 package com.starsrealm.jbmodelconvert
 
 import kotlinx.serialization.*
-import kotlinx.serialization.json.*
-import java.util.Objects
 
 @Serializable
 data class Model(
